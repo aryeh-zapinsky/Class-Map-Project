@@ -1,0 +1,7 @@
+*pullcourses (webpage, file) [modify the file given]
+*handle (file, course) [modify the course object by parsing the file]
+*add the course to the vector of courses
+*go through vector of courses adding links to other courses' adjacency lists
+______________________________
+
+Display the courses
