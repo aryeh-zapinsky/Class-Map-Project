@@ -116,7 +116,6 @@ int main(int argc, char **argv)
     memset(key, 0, sizeof(key)); memset(note, 0, sizeof(note));
     memset(title, 0, sizeof(title)); memset(epithet, 0, sizeof(epithet));
       
-    char *word_color = (char *)"bgcolor=#99CCFF>";
     
     while (fgets(buf, sizeof(buf), outputFile)) {
      
@@ -164,19 +163,64 @@ int main(int argc, char **argv)
       // Add courses to database //
       // Get course field
       if (pagesAdd == 0) {
+        char *word_color = (char *)"bgcolor=#99CCFF>";
+        char *pch = buf;
+
+        if (!strstr(buf, word_color)) {
+          word_color = (char *) "bgcolor=#DADADA>";
+        
+          // first part of cleaning up HTML line to get data
+          // Handles when bgcolor is in line (most cases)
+          if (strstr(buf, word_color)) {
+            pch = strstr(pch, word_color) + strlen(word_color);
+          }
+          // second part of cleaning up HTML line to get data
+          // Handles the end part of the line
+          if (strstr(buf, "</td>")) {
+            int n = strlen(pch) - strlen(strstr(buf, "</td>"));
+            strncpy(pch, pch, n);
+          }
+
+          // Assigning values and specific cleaning for different course fields
+          // setting title value
+          if (strcmp(word, "b>") == 0 && strstr(buf, "+1")) {
+            //fprintf(stdout, "WORD: %s\n", word);
+            pch = strstr(pch, ">") + 1;
+            int n = strlen(pch) - strlen(strstr(pch, "</"));
+            strncpy(title, pch, n);
+            //fprintf(stdout, "TITLE: %s\n", title);
+          }
+          // setting epithet value
+          else if (strcmp(word, "b>") == 0 && strstr(buf, "+2")) {
+            //fprintf(stdout, "WORD: %s\n", word);
+            pch = strstr(pch, ">") + 1;
+            int n = strlen(pch) - strlen(strstr(pch, "</"));
+            strncpy(epithet, pch, n);
+            //fprintf(stdout, "EPITHET: %s\n", epithet);
+          }
+          // setting call number value
+          else if (strcmp(word, "Call Number") == 0) {
+            //pch = strstr(pch, ">") + 1;
+            //int n = strlen(pch) - strlen(strstr(pch, "</"));
+            //strncpy(epithet, pch, n);
+            strcpy(call, pch);
+            fprintf(stdout, "CALL: %s\n", call);
+          }
+        }
+        // Have to update the key word after parsing values, so values are
+        // present to be assigned
         // setting keyword
+        word_color = (char *) "bgcolor=#99CCFF>";
         if (strstr(buf, word_color)) {
-          char *pch = strstr(buf, word_color) + strlen(word_color);
+          pch = strstr(buf, word_color) + strlen(word_color);
           pch = strtok(pch, "<");
 
           strcpy(word, pch);
 
           // for testing
-          fprintf(stdout, "%s\n", pch);
+          //fprintf(stdout, "%s\n", pch);
         }
-        // setting title value
-        else if (strcmp(word, "b>") ){ //&& strstr(buf, "+1")) {
-        }
+        
       }
     }
     fclose(outputFile);
