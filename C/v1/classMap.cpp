@@ -41,7 +41,7 @@ int main(int argc, char **argv)
   memset(sql, 0, sizeof(sql));
   strcpy (sql, "DROP TABLE IF EXISTS Courses;"
           "CREATE TABLE Courses(Id INTEGER PRIMARY KEY, Call TEXT, Day TEXT"
-          "Points INT, Approval TEXT, Instructor TEXT, Type TEXT, "
+          "Location TEXT, Points INT, Approval TEXT, Instructor TEXT, Type TEXT, "
           "Description TEXT, Subject TEXT, Number TEXT, Section TEXT, Key TEXT"
           ", Note TEXT, Title TEXT, Epithet TEXT);");
 
@@ -97,15 +97,16 @@ int main(int argc, char **argv)
     memset(data, 0, sizeof(data));
 
     /*  "CREATE TABLE Courses(Id INTEGER PRIMARY KEY, Call TEXT, Day TEXT"
-        "Points INT, Approval TEXT, Instructor TEXT, Type TEXT, "
+        "Location TEXT, Points INT, Approval TEXT, Instructor TEXT, Type TEXT, "
         "Description TEXT, Subject TEXT, Number TEXT, Section TEXT, Key TEXT"
         ", Note TEXT, Title TEXT, Epithet TEXT);");
     */
-    char call[SMALL_BUF]; char day[SMALL_BUF]; int points;
+    char call[SMALL_BUF]; char day[SMALL_BUF]; int points = 0; 
     char approval[SMALL_BUF]; char instructor[SMALL_BUF]; char type[SMALL_BUF];
     char description[BUF_SIZE]; char subject[SMALL_BUF];
     char number[SMALL_BUF]; char section[SMALL_BUF]; char key[SMALL_BUF];
     char note[BUF_SIZE]; char title[MED_BUF]; char epithet[MED_BUF];
+    char loc[SMALL_BUF];
 
     memset(call, 0, sizeof(call)); memset(day, 0, sizeof(day));
     memset(approval, 0, sizeof(approval));
@@ -115,6 +116,7 @@ int main(int argc, char **argv)
     memset(number, 0, sizeof(number)); memset(section, 0, sizeof(section));
     memset(key, 0, sizeof(key)); memset(note, 0, sizeof(note));
     memset(title, 0, sizeof(title)); memset(epithet, 0, sizeof(epithet));
+    memset(loc, 0, sizeof(loc));
       
     
     while (fgets(buf, sizeof(buf), outputFile)) {
@@ -165,10 +167,10 @@ int main(int argc, char **argv)
       if (pagesAdd == 0) {
         char *word_color = (char *)"bgcolor=#99CCFF>";
         char *pch = buf;
-
+      
         if (!strstr(buf, word_color)) {
           word_color = (char *) "bgcolor=#DADADA>";
-        
+          
           // first part of cleaning up HTML line to get data
           // Handles when bgcolor is in line (most cases)
           if (strstr(buf, word_color)) {
@@ -177,9 +179,9 @@ int main(int argc, char **argv)
           // second part of cleaning up HTML line to get data
           // Handles the end part of the line
           if (strstr(buf, "</td>")) {
-            int n = strlen(pch) - strlen(strstr(buf, "</td>"));
-            strncpy(pch, pch, n);
-          }
+            int end = strlen(strstr(buf, "</td>"));
+            pch[strlen(pch)-end] = 0;
+}
 
           // Assigning values and specific cleaning for different course fields
           // setting title value
@@ -200,12 +202,75 @@ int main(int argc, char **argv)
           }
           // setting call number value
           else if (strcmp(word, "Call Number") == 0) {
-            //pch = strstr(pch, ">") + 1;
-            //int n = strlen(pch) - strlen(strstr(pch, "</"));
-            //strncpy(epithet, pch, n);
             strcpy(call, pch);
-            fprintf(stdout, "CALL: %s\n", call);
+            //fprintf(stdout, "CALL: %s\n", call);
           }
+          // setting day value
+          else if (strcmp(word, "Day &amp; Time") == 0) {
+            int lenwhole = strlen(pch);
+            char *br = strstr(pch, "<br>");
+            int lenloc = strlen(br);
+            strncpy(day, pch, lenwhole - lenloc);
+            strcpy(loc, br + 4);
+            //fprintf(stdout, "DAY: %s\n", day);
+            //fprintf(stdout, "LOCATION: %s\n", loc);
+          }
+          // setting call number value
+          else if (strcmp(word, "Points") == 0) {
+            points = atoi(pch);
+            //fprintf(stdout, "POINTS: %d\n", points);
+          }
+          // setting approval value
+          else if (strcmp(word, "Approvals Required") == 0) {
+            strcpy(approval, pch);
+            //fprintf(stdout, "APPROVAL: %s\n", approval);
+          }
+          // TODO: Clean up fringe case where instructor includes email
+          //       and webpage
+          // setting instructor value
+          else if (strcmp(word, "Instructor") == 0) {
+            strcpy(instructor, pch);
+            //fprintf(stdout, "INSTRUCTOR: %s\n", instructor);
+          }
+          // setting type value
+          else if (strcmp(word, "Type") == 0) {
+            strcpy(type, pch);
+            //fprintf(stdout, "TYPE: %s\n", type);
+          }
+          // setting desciption value
+          else if (strcmp(word, "Course Description") == 0) {
+            strcat(description, pch);
+            //fprintf(stdout, "DESCRIPTION: %s\n", description);
+          }
+          // setting subject value
+          else if (strcmp(word, "Subject") == 0) {
+            strcpy(subject, pch);
+            //fprintf(stdout, "SUBJECT: %s\n", subject);
+          }
+          // setting number value
+          else if (strcmp(word, "Number") == 0) {
+            strcpy(number, pch);
+            //fprintf(stdout, "NUMBER: %s\n", number);
+          }
+          // setting section value
+          else if (strcmp(word, "Section") == 0) {
+            strcpy(section, pch);
+            //fprintf(stdout, "SECTION: %s\n", section);
+          }
+          // setting note value
+          else if (strcmp(word, "Note") == 0) {
+            strcat(note, pch);
+            //fprintf(stdout, "NOTE: %s\n", note);
+          }
+          // setting key value
+          else if (strcmp(word, "Section key") == 0) {
+            strcpy(key, pch);
+            fprintf(stdout, "SECTION KEY: %s\n", key);
+
+            // Change word so no more processing of lines
+            strcpy(word, "");
+          }
+          
         }
         // Have to update the key word after parsing values, so values are
         // present to be assigned
