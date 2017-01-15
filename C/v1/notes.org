@@ -5,3 +5,8 @@
 ______________________________
 
 Display the courses
+
+______________________________
+
+go through description and parse to find prereqs
+?go through instructor and remove email and webpage?
